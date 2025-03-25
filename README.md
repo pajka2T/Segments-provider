@@ -1,4 +1,4 @@
-# Strava-segments-provider
+# Strava segments provider
 
 API providing data of Strava's segments near specified place and a simple website showing how it works.
 

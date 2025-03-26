@@ -32,6 +32,17 @@ form.addEventListener('submit', async function(e) {
     .catch(err => console.log(err));
     console.log(segments);
 
+    if (segments === null) {
+        let nothingFound = document.createElement("trow");
+        let info = document.createElement("p");
+        info.textContent = "You need to connect with APIs using your API keys to display the data.";
+        nothingFound.appendChild(info);
+        nothingFound.id = "nothingInfo";
+        nothingFound.classList.add("text-center");
+        resDiv.appendChild(nothingFound);
+        return;
+    }
+
     segments = segments["results"];
     
     if (segments.length === 0) {

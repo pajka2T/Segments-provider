@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from threading import Thread
 import requests
+import asyncio
 
 app = FastAPI()
 app.add_middleware(
@@ -95,24 +97,32 @@ def countAreaCoordinates(longitude: float, latitude: float, radius: int):
 
     return {"leftDownCorner": leftDownCorner, "rightUpCorner": rightUpCorner}
 
+async def segmentDataInThread(segment: dict):
+    print(segment)
+    seg = Segment(
+        name=segment["name"],
+        distance=segment["distance"],
+        elevation=segment["elev_difference"],
+        avg_grade=segment["avg_grade"]
+    )
+    segmentDetails = await getSegment(segment['id'])
+    print(segmentDetails)
+    seg.no_efforts = segmentDetails["effort_count"]
+    seg.no_athletes = segmentDetails["athlete_count"]
+    seg.no_stars = segmentDetails["star_count"]
+    if (segmentDetails["xoms"] is not None):
+        seg.kom = segmentDetails["xoms"]["kom"] if segmentDetails["xoms"]["kom"][:-1] < segmentDetails["xoms"]["qom"][:-1] else segmentDetails["xoms"]["qom"]
+        seg.qom = segmentDetails["xoms"]["qom"]
+    if (segmentDetails["local_legend"] is not None):
+        seg.ll = segmentDetails["local_legend"]["title"]
+        seg.ll_no_efforts = int(segmentDetails["local_legend"]["effort_count"])
+    segments.append(seg)
+
 async def fillSegments(data: str):
+    threads = []
     for segment in data:
-        print(segment)
-        seg = Segment(
-            name=segment["name"],
-            distance=segment["distance"],
-            elevation=segment["elev_difference"],
-            avg_grade=segment["avg_grade"]
-        )
-        segmentDetails = await getSegment(segment['id'])
-        print(segmentDetails)
-        seg.no_efforts = segmentDetails["effort_count"]
-        seg.no_athletes = segmentDetails["athlete_count"]
-        seg.no_stars = segmentDetails["star_count"]
-        if (segmentDetails["xoms"] is not None):
-            seg.kom = segmentDetails["xoms"]["kom"] if segmentDetails["xoms"]["kom"][:-1] < segmentDetails["xoms"]["qom"][:-1] else segmentDetails["xoms"]["qom"]
-            seg.qom = segmentDetails["xoms"]["qom"]
-        if (segmentDetails["local_legend"] is not None):
-            seg.ll = segmentDetails["local_legend"]["title"]
-            seg.ll_no_efforts = int(segmentDetails["local_legend"]["effort_count"])
-        segments.append(seg)
+        thread = Thread(target=asyncio.run, args=(segmentDataInThread(segment),))
+        thread.start()
+        threads.append(thread)
+    for thread in threads:
+        thread.join()

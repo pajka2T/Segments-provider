@@ -1,7 +1,7 @@
 # Segments provider 🏃  
 API providing data of Strava's segments near specified place and a simple website showing how it works.
 
-# About the project  
+## About the project  
 This API provides an easy way to gather the data of Strava's segments. You just need to fill in the address of a place you want to explore, choose the radius of an area in which you are looking for segments and select the type of sport you are interested in: running or cycling. Then you will be provided with the most important data of segments. That's it! Go on and check the segments' KOMs and local legends, and try to beat them in your activities! 🏁  
 
 ---
